@@ -8,6 +8,8 @@ public class Menu {
 
     String choice;
 
+    Boolean auth = false;
+
     Scanner sc = new Scanner(System.in);
 
     public void Actions(){
@@ -15,6 +17,15 @@ public class Menu {
     while(true) {
 
         choice = sc.nextLine();
+
+        if (auth == false && !choice.equals("auth")) {
+                System.out.println("Please, provide access for application.");
+            if (choice.equals("exit")){
+                System.exit(0);
+                break;
+            }
+                continue;
+        }
 
         handle(choice);
     }
@@ -25,8 +36,8 @@ public class Menu {
 
         switch(choice){
             case "new":
-                System.out.println("---NEW RELEASES---");
-                printformatted(new Records().getNewRecords());
+                    System.out.println("---NEW RELEASES---");
+                    printformatted(new Records().getNewRecords());
                 break;
             case "featured":
                 System.out.println("---FEATURED---");
@@ -36,11 +47,17 @@ public class Menu {
                 System.out.println("---CATEGORIES---");
                 printformatted(new Categories().getCategories());
                 break;
-            case "playlists":
+            case "playlists Mood":
                 System.out.println("---MOOD PLAYLISTS---");
                 printformatted(new Playlists().getPlaylists());
                 break;
+            case "auth":
+                System.out.println("https://accounts.spotify.com/authorize?client_id=f8a586cd8fa2403fb773606be4f609ab&redirect_uri=http://localhost:8080&response_type=code\n" +
+                        "---SUCCESS---");
+                auth = true;
+                break;
             case "exit":
+                System.out.println("---GOODBYE!---");
                 System.exit(0);
                 break;
         }

@@ -10,7 +10,7 @@ public class Records {
             "Runaway [Lil Peep]", "The Greatest Show [Panic! At The Disco]",
             "All Out Life [Slipknot]");
 
-    private List<String> featuredRecords = new ArrayList<>(Arrays.asList("Wake Up and Smell the Coffee",
+    private List<String> featuredRecords = new ArrayList<>(Arrays.asList("Mellow Morning","Wake Up and Smell the Coffee",
             "Monday Motivation",
             "Songs to Sing in the Shower"));
 
