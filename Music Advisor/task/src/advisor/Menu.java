@@ -37,9 +37,9 @@ public class Menu {
 
         if(args.length != 0 && args[0].equals("-access")) {
             apiAuthAdressDef = args[1];
-            spotifyAuthorizationPage = apiAuthAdressDef + "/authorize?client_id="
+            spotifyAuthorizationPage = URI.create(apiAuthAdressDef + "/authorize?client_id="
                     + clientId + "&redirect_uri="
-                    + redirectURI + "&response_type=code";
+                    + redirectURI + "&response_type=code");
         }
 
         if (args.length != 0 && args[0].equals("-resource")) {
