@@ -1,5 +1,8 @@
 package advisor;
 
+import com.google.gson.JsonElement;
+import com.google.gson.JsonObject;
+import com.google.gson.JsonParser;
 import com.sun.net.httpserver.HttpExchange;
 import com.sun.net.httpserver.HttpHandler;
 import com.sun.net.httpserver.HttpServer;
@@ -30,14 +33,14 @@ public class Menu {
 
     Scanner sc = new Scanner(System.in);
 
-    String apiAdress="https://accounts.spotify.com";
-
     public void Actions() throws IOException, InterruptedException {
 
-
-
         if(args.length != 0 && args[0].equals("-access")) {
-            apiAdress = args[1];
+            apiAuthAdressDef = args[1];
+        }
+
+        if (args.length != 0 && args[0].equals("-resource")) {
+            apiResAdressDef = args[2];
         }
 
     while(true) {
@@ -64,7 +67,10 @@ public class Menu {
         switch(choice){
             case "new":
                     System.out.println("---NEW RELEASES---");
-                    printformatted(new Records().getNewRecords());
+
+                    printResults(makeHttpRequest("GET", apiResAdressDef + "/v1/browse/new-releases"));
+
+                    //printformatted(new Records().getNewRecords());
                 break;
             case "featured":
                 System.out.println("---FEATURED---");
@@ -98,7 +104,7 @@ public class Menu {
     private void createServer() throws IOException, InterruptedException {
 
         HttpServer server = HttpServer.create();
-        server.bind(new InetSocketAddress(8090), 0);
+        server.bind(new InetSocketAddress(8091), 0);
 
         server.createContext("/",
                 new HttpHandler() {
@@ -141,29 +147,76 @@ public class Menu {
 
     }
 
-    private void getCode() throws IOException, InterruptedException {
+    private String makeHttpRequest(String httpMethod, String endpoint) throws IOException, InterruptedException {
 
-        HttpClient client1 = HttpClient.newBuilder().build();
+        HttpResponse<String> response;
+        HttpClient client = HttpClient.newBuilder().build();
+        URI endpointUri = URI.create(endpoint);
 
-        HttpRequest request = HttpRequest.newBuilder()
-                .uri((spotifyAuthorizationPage))
-                .GET()
-                .build();
+        switch(httpMethod){
 
-        HttpResponse<String> response1 = client1.send(request, HttpResponse.BodyHandlers.ofString());
+            case "GET":
+                        HttpRequest request = HttpRequest.newBuilder()
+                        .uri(endpointUri)
+                                .setHeader("Accept","application/json")
+                                .setHeader("Content-Type", "application/json")
+                                .setHeader("Authorization", "Bearer " + token)
+                                .GET()
+                                .build();
+                        response = client.send(request, HttpResponse.BodyHandlers.ofString());
+                        return response.body();
 
-        System.out.println(response1.statusCode());
+        }
+        return "";
+    }
 
+    public void printResults(String response){
+        JsonElement je = JsonParser.parseString(response);
+        JsonObject jo = je.getAsJsonObject();
+
+        for (int i=0; i < jo.getAsJsonObject("albums")
+                .getAsJsonArray("items").size();i++){
+
+            System.out.println(jo.getAsJsonObject("albums")
+                        .getAsJsonArray("items")
+                        .get(i).getAsJsonObject().get("name").getAsString()
+            );
+
+            int jLength = jo.getAsJsonObject("albums")
+                    .getAsJsonArray("items")
+                    .get(i).getAsJsonObject().get("artists")
+                    .getAsJsonArray().size();
+
+            System.out.print("[");
+            for(int j=0; j < jLength;j++) {
+
+                if (j>0) {
+                    System.out.print(", ");
+                }
+
+                System.out.print(jo.getAsJsonObject("albums")
+                        .getAsJsonArray("items")
+                        .get(i).getAsJsonObject().get("artists")
+                        .getAsJsonArray().get(j).getAsJsonObject().get("name").getAsString()
+                );
+            } System.out.println("]");
+
+        System.out.println(jo.getAsJsonObject("albums")
+                .getAsJsonArray("items")
+                .get(i).getAsJsonObject().getAsJsonObject("external_urls")
+                .get("spotify").getAsString()+"\n"
+        );
+        }
     }
 
     private Boolean getToken() throws IOException, InterruptedException {
 
 
-        HttpClient client2 = HttpClient.newBuilder().build();
+        HttpClient client = HttpClient.newBuilder().build();
 
         HttpRequest postRequestToSpotify = HttpRequest.newBuilder()
                 .header("Content-Type", "application/x-www-form-urlencoded")
-                .uri(URI.create(apiAdress + "/api/token"))
+                .uri(URI.create(apiAuthAdressDef + "/api/token"))
                 .POST(HttpRequest.BodyPublishers.ofString("grant_type=" + grantType
                         + "&" + code
                         + "&redirect_uri=" + redirectURI
@@ -173,13 +226,19 @@ public class Menu {
 
         System.out.println("making http request for access_token...");
 
-        HttpResponse<String> response2 = client2
+        HttpResponse<String> response = client
                 .send(postRequestToSpotify, HttpResponse.BodyHandlers.ofString());
         System.out.println("response:");
-        System.out.println(response2.body());
+        System.out.println(response.body());
 
-        if (response2.body().contains("access_token")) {
+        if (response.body().contains("access_token")) {
             System.out.println("---SUCCESS---");
+
+        JsonElement je = JsonParser.parseString(response.body());
+        JsonObject jo = je.getAsJsonObject();
+        token = jo.get("access_token").toString();
+        token = token.replaceAll("\"","");
+
             return true;
         }
         return false;
