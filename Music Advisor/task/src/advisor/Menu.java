@@ -23,7 +23,7 @@ public class Menu {
         this.args = args;
     }
 
-    String[] args = new String[2];
+    String[] args;
 
     String choice;
 
@@ -37,6 +37,9 @@ public class Menu {
 
         if(args.length != 0 && args[0].equals("-access")) {
             apiAuthAdressDef = args[1];
+            spotifyAuthorizationPage = apiAuthAdressDef + "/authorize?client_id="
+                    + clientId + "&redirect_uri="
+                    + redirectURI + "&response_type=code";
         }
 
         if (args.length != 0 && args[0].equals("-resource")) {
@@ -47,7 +50,7 @@ public class Menu {
 
         choice = sc.nextLine();
 
-        if (auth == false && !choice.equals("auth")) {
+        if (!auth && !choice.equals("auth")) {
                 System.out.println("Please, provide access for application.");
             if (choice.equals("exit")){
                 System.exit(0);
@@ -101,7 +104,7 @@ public class Menu {
 
     }
 
-    private void createServer() throws IOException, InterruptedException {
+    private void createServer() throws IOException {
 
         HttpServer server = HttpServer.create();
         server.bind(new InetSocketAddress(8091), 0);
