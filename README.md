@@ -1,5 +1,5 @@
 # Music_Advisor
-JetBrains Academy student project 2 
+JetBrains Academy student project 
 
 Using the Spotify authorization guide and the information given here (you need the section Authorization Code Flow), improve your program by adding real authorization on Spotify.
 
